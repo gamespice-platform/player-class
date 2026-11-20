@@ -1,3 +1,5 @@
+[![dot-player-class - GameSpice addon](docs/banner.png)](https://moddingcommunity.com/a/249-dot-player-class)
+
 Player classes (health, speed, loadout, abilities) as a small document a dedicated server can check without loading any content.
 
 A class change is recorded and applied on the next spawn, so nobody changes health or weapons mid-fight. A dead player gets the change immediately.
