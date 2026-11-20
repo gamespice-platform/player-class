@@ -1,4 +1,4 @@
-[![Player Class - GameSpice addon](docs/banner.png)](https://moddingcommunity.com/a/249-dot-player-class)
+[![Player Class - GameSpice addon](docs/banner.png)](https://moddingcommunity.com/a/39-gs-player-class)
 
 Player classes (health, speed, loadout, abilities) as a small document a dedicated server can check without loading any content.
 
