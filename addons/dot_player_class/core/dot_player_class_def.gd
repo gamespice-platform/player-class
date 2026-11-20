@@ -7,12 +7,12 @@ extends Resource
 ## [b]Everything here is a number or an id, and that is the whole design.[/b] A
 ## dedicated server has to be able to say "no, you cannot be that" without loading a
 ## mesh, an animation set or a weapon scene — the same requirement that shaped
-## dot-user-avatar and dot-loadout, and for the same reason: a server running a match
+## GameSpice User Avatar and GameSpice Loadout, and for the same reason: a server running a match
 ## should not have to ship every piece of content anybody owns.
 ##
 ## So a class names its loadout, its model and its abilities; it does not contain them.
 ## Resolution from an id to actual content happens on a client, through a catalogue,
-## through dot-cloud.
+## through GameSpice Cloud.
 
 ## A number field at this value is not set by the class: the game's own value stands.
 const INHERIT := -1.0
@@ -72,7 +72,7 @@ const INHERITING: Array[String] = [
 ## Carry capacity in the game's weight unit; [constant INHERIT] keeps the game's.
 @export_range(-1.0, 1000.0, 0.5) var carry_limit: float = INHERIT
 
-## Dropped weapons (dot-weapon's DotWeaponDropRules.resolve reads these by name); each
+## Dropped weapons (GameSpice Weapon's DotWeaponDropRules.resolve reads these by name); each
 ## [constant INHERIT] keeps the server's rule. The two switches are 0 (off) or 1 (on); the lifetime
 ## is seconds with 0 meaning it never vanishes.
 @export_range(-1.0, 1.0, 1.0) var drop_allowed: float = INHERIT
@@ -93,16 +93,16 @@ const INHERITING: Array[String] = [
 
 @export_group("Content ids")
 
-## The dot-loadout document this class starts with.
+## The GameSpice Loadout document this class starts with.
 @export var loadout_id: StringName = &""
 
-## The dot-player-char model or sprite id this class looks like.
+## The GameSpice Player Char model or sprite id this class looks like.
 @export var char_id: StringName = &""
 
-## The dot-player-char animation set to drive.
+## The GameSpice Player Char animation set to drive.
 @export var animation_set: StringName = &""
 
-## dot-audio ids for a voice, by situation. Open-ended on purpose.
+## GameSpice Audio ids for a voice, by situation. Open-ended on purpose.
 @export var voice_set: StringName = &""
 
 ## Ability ids a game resolves however it likes.
@@ -127,7 +127,7 @@ const INHERITING: Array[String] = [
 
 ## An entitlement id a player must hold. Empty means anybody.
 ##
-## Checked by the game against dot-auth or dot-user; this addon only carries the id,
+## Checked by the game against GameSpice Auth or GameSpice User; this addon only carries the id,
 ## because an addon that decided entitlement would be an addon a client could patch.
 @export var requires_entitlement: StringName = &""
 

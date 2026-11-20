@@ -1,12 +1,12 @@
-# dot-player-class
+# GameSpice Player Class
 
 What a player is, as a document rather than as a scene: a catalogue of classes made of numbers and ids, a manager that records a class change as a request the next spawn honours, and a duck-typed bridge that writes a class's numbers onto health and movement.
 
 Read the family [CLAUDE.md](../../CLAUDE.md) first.
 
-**The distributable is `addons/dot_player_class/`.** It requires [dot-core](../dot-core) and [dot-player](../dot-player) (symlinked into `addons/`, gitignored), and nothing else: dot-combat and dot-player-controller are reached by duck typing.
+**The distributable is `addons/dot_player_class/`.** It requires [GameSpice Core](../dot-core) and [GameSpice Player](../dot-player) (symlinked into `addons/`, gitignored), and nothing else: dot-combat and dot-player-controller are reached by duck typing.
 
-Also requires **dot-profile** (`DotProfileSet`, `DotProfile`, `DotProfileRuntime`, split from dot-core): link `addons/dot_profile` next to `addons/dot_core`.
+Also requires **GameSpice Profile** (`DotProfileSet`, `DotProfile`, `DotProfileRuntime`, split from GameSpice Core): link `addons/dot_profile` next to `addons/dot_core`.
 
 ## Read before
 
@@ -22,8 +22,8 @@ Also requires **dot-profile** (`DotProfileSet`, `DotProfile`, `DotProfileRuntime
 | `core/dot_player_class_catalogue.gd` | `DotPlayerClassCatalogue`: the set, `get_class_def`, `fallback_for`; presets `single()`, `team_shooter()`, `asymmetric()` |
 | `core/dot_player_class_rules.gd` | `DotPlayerClassRules`: when a choice may be made and when it lands |
 | `runtime/dot_player_class_manager.gd` | `DotPlayerClassManager`: current, pending, limits, entitlements, mirror; `request`, `force`, `apply_pending`, `def_of`, `options_for` |
-| `core/dot_player_class_profiles.gd` | `DotPlayerClassProfiles`: the dot-profile schema for kind `class`; `make_set`, `load_def`, `to_catalogue` ([design](docs/design.md#classes-as-dot-profile-data)) |
-| `bridge/dot_player_class_apply.gd` | `DotPlayerClassApply`: `to_health`, `to_movement`, `knockback_scale`, `to_immunity` (the `immune` list onto dot-combat's `DotDamageImmunity`), all duck-typed |
+| `core/dot_player_class_profiles.gd` | `DotPlayerClassProfiles`: the GameSpice Profile schema for kind `class`; `make_set`, `load_def`, `to_catalogue` ([design](docs/design.md#classes-as-dot-profile-data)) |
+| `bridge/dot_player_class_apply.gd` | `DotPlayerClassApply`: `to_health`, `to_movement`, `knockback_scale`, `to_immunity` (the `immune` list onto GameSpice Combat's `DotDamageImmunity`), all duck-typed |
 | `examples/class_selftest.tscn` | the suite |
 
 Paths except `examples/` are in `addons/dot_player_class/`.

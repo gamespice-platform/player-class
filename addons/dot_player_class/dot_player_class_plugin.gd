@@ -1,7 +1,7 @@
 @tool
 extends EditorPlugin
 
-## Editor entry point for dot-player-class. Registers inspector types only.
+## Editor entry point for GameSpice Player Class. Registers inspector types only.
 
 const _ICON := "res://addons/dot_player_class/icon_placeholder.svg"
 

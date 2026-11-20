@@ -46,7 +46,7 @@ var alive_fn: Callable = Callable()
 ## `func(key: String, entitlement: StringName) -> bool`. Whether they may have it.
 ##
 ## The check is the game's on purpose. An addon that decided entitlement would be an
-## addon a client could patch; the authority is dot-auth, or a backbone, or a shop.
+## addon a client could patch; the authority is GameSpice Auth, or a backbone, or a shop.
 var entitled_fn: Callable = Callable()
 
 ## `func() -> bool`. Whether a round is under way, for the mid-round rule.

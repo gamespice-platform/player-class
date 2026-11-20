@@ -52,7 +52,7 @@ static func schema() -> Array:
 	]
 
 
-## Kind to schema for tools that validate profiles without a game (dot-profile's profile_check).
+## Kind to schema for tools that validate profiles without a game (GameSpice Profile's profile_check).
 static func profile_schemas() -> Dictionary:
 	return {KIND: {"schema": schema(), "children": {}}}
 

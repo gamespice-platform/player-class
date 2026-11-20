@@ -591,7 +591,7 @@ func _line(text: String) -> void:
 ## The bridge that writes a class's numbers onto things this addon does not depend on.
 ##
 ## Stood up against STUBS rather than against `DotHealth` and `DotFpsTunables`, and that
-## is the check rather than a convenience: this project installs dot-core and dot-player
+## is the check rather than a convenience: this project installs GameSpice Core and GameSpice Player
 ## and nothing else, so if the bridge ever names one of those classes the suite stops
 ## compiling. Testing it against the real ones would need the dependency the bridge
 ## exists to avoid.
