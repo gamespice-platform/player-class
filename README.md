@@ -6,7 +6,7 @@ A class change is recorded and applied on the next spawn, so nobody changes heal
 
 ## Install
 
-1. Copy `addons/dot_player_class/`, `addons/dot_player/` and `addons/dot_core/` into your project.
+1. Copy `addons/gs_player_class/`, `addons/gs_player/` and `addons/gs_core/` into your project.
 2. Enable all three in *Project > Project Settings > Plugins*.
 
 Needs Godot 4.7 or newer.

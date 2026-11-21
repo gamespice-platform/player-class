@@ -1,11 +1,11 @@
 class_name GSPlayerClassProfiles
 extends RefCounted
 
-## Loads [GSPlayerClassDef] from `class` profiles (cfg/addon/dot-player-class/class, cfg/game/<game>/class, cfg/server/...).
+## Loads [GSPlayerClassDef] from `class` profiles (cfg/addon/gs-player-class/class, cfg/game/<game>/class, cfg/server/...).
 ##
 ## A server owner edits a yml, not code. Ranges are the schema's, so an unsafe value is refused on load.
 
-const ADDON := "dot-player-class"
+const ADDON := "gs-player-class"
 const KIND := "class"
 
 

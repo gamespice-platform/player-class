@@ -15,7 +15,7 @@ extends Node
 
 const CHANNEL := "player.class"
 
-const SERVICE := &"dot_player_class_manager"
+const SERVICE := &"gs_player_class_manager"
 
 ## Somebody's class actually changed.
 signal class_changed(key: String, from: StringName, to: StringName)

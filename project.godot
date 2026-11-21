@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="dot-player-class"
+config/name="gs-player-class"
 config/description="What a player IS, as a bounded document a server can check: definitions with health, movement and loadout ids, per-team limits, and a change that lands on the next spawn rather than mid-fight."
 run/main_scene="res://examples/class_selftest.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
@@ -23,7 +23,7 @@ window/size/viewport_height=900
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/dot_player_class/plugin.cfg")
+enabled=PackedStringArray("res://addons/gs_player_class/plugin.cfg")
 
 [importer_defaults]
 

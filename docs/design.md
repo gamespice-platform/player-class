@@ -10,7 +10,7 @@ Everything else follows. It is why `request()` returns a `GSResult` rather than 
 
 The reason is not tidiness. Changing class mid-fight changes health, speed and weapons while somebody is shooting at you, and the outcome is an exploit or a bug report depending on who wins. The class screen saying "you will respawn as a medic" is the feature.
 
-The second idea is dot-user-avatar's and dot-loadout's, restated: **a dedicated server decides whether somebody may be a class without loading any content.** Every field in `GSPlayerClassDef` is a number or an id. The suite loads nothing, which is the check.
+The second idea is gs-user-avatar's and gs-loadout's, restated: **a dedicated server decides whether somebody may be a class without loading any content.** Every field in `GSPlayerClassDef` is a number or an id. The suite loads nothing, which is the check.
 
 ## `get_class_def`, not `get_class`
 
@@ -28,7 +28,7 @@ Between the request and the spawn, the slot can fill or the player can change si
 
 ## Entitlement is checked by the game, never here
 
-`entitled_fn` is a callable the game supplies. An addon that decided entitlement would be an addon a client could patch; the authority is dot-auth, a backbone, or a shop. `requires_entitlement` is only an id this addon carries. The same principle as dot-user-avatar's: the addon validates *shape*, the platform validates *permission*.
+`entitled_fn` is a callable the game supplies. An addon that decided entitlement would be an addon a client could patch; the authority is gs-auth, a backbone, or a shop. `requires_entitlement` is only an id this addon carries. The same principle as gs-user-avatar's: the addon validates *shape*, the platform validates *permission*.
 
 ## The presets are relations, not content
 
@@ -44,7 +44,7 @@ It does not know what a spawn is either: `apply_pending` is called by whatever s
 
 A class carries `max_health`, `max_armour`, regeneration, a move-speed scale, a jump scale, a knockback scale and a mass. Those belong to GameSpice Combat and GameSpice Player Controller, neither of which this addon depends on or wants to: a `GSPlayerClassDef` that named `GSHealth` would be a class document a dedicated server could not validate without installing a combat addon, which is the whole thing this addon promises not to need.
 
-So the bridge writes through `Object.set` after `Object.get` has shown the field exists, the same way `GSTeamRoster.bind_match` drives dot-match. **No `GSHealth` or `GSFpsTunables` identifier appears in the file**, which is not a style point: a script that merely mentions a `class_name` the project does not have fails to parse and takes every script referencing it down with it.
+So the bridge writes through `Object.set` after `Object.get` has shown the field exists, the same way `GSTeamRoster.bind_match` drives gs-match. **No `GSHealth` or `GSFpsTunables` identifier appears in the file**, which is not a style point: a script that merely mentions a `class_name` the project does not have fails to parse and takes every script referencing it down with it.
 
 It exists because games had each been about to write the same six lines and had instead written none: the manager decided who was what and emitted it, and the numbers on the document were read by nobody.
 
@@ -57,7 +57,7 @@ The suite stands it up against **stubs** rather than against the real classes, a
 
 ## Classes as GameSpice Profile data
 
-`GSPlayerClassProfiles` is the dot-profile schema for kind `class`, so an operator edits a yml (`cfg/server/game/<game>/class/<id>.yml`) instead of code, with the usual layers (defaults < addon < game < server < environment < command line, and the runtime layer). Walk, sprint and crouch scales, the four stamina numbers and `carry_limit` default to `GSPlayerClassDef.INHERIT` (-1): the class does not set them and the game's own tunable stands, which keeps one source per number (Zombie Zone's `ZzConfig` stays the default, the class only overrides). `move_speed_scale` (`speed` in the yml) multiplies the run speed. `to_movement` writes only the fields the class sets; `GSPlayerClassApply.carry_limit(def, fallback)` answers the capacity. Out-of-range values and unknown keys fail the load (the schema's), and `validate()` refuses a negative that is not -1. A change applies where the game re-reads the profile, normally the next spawn.
+`GSPlayerClassProfiles` is the gs-profile schema for kind `class`, so an operator edits a yml (`cfg/server/game/<game>/class/<id>.yml`) instead of code, with the usual layers (defaults < addon < game < server < environment < command line, and the runtime layer). Walk, sprint and crouch scales, the four stamina numbers and `carry_limit` default to `GSPlayerClassDef.INHERIT` (-1): the class does not set them and the game's own tunable stands, which keeps one source per number (Zombie Zone's `ZzConfig` stays the default, the class only overrides). `move_speed_scale` (`speed` in the yml) multiplies the run speed. `to_movement` writes only the fields the class sets; `GSPlayerClassApply.carry_limit(def, fallback)` answers the capacity. Out-of-range values and unknown keys fail the load (the schema's), and `validate()` refuses a negative that is not -1. A change applies where the game re-reads the profile, normally the next spawn.
 
 
 ### Editing a class (server owner)

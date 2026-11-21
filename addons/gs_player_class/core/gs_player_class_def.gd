@@ -204,7 +204,7 @@ func attribute(key: String, fallback: Variant = null) -> Variant:
 
 ## Effective damage after armour, and how much armour is left.
 ##
-## Here rather than in dot-combat because the numbers that decide it are here, and a
+## Here rather than in gs-combat because the numbers that decide it are here, and a
 ## game doing the arithmetic itself is a game where the class screen and the damage
 ## model disagree about what 150 armour means.
 func absorb(damage: float, armour: float) -> Dictionary:

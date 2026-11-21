@@ -1,6 +1,6 @@
 extends Node
 
-## Exercises dot-player-class with no content, no spawns and no match.
+## Exercises gs-player-class with no content, no spawns and no match.
 ##
 ## Which is the point: the promise this addon makes is that a dedicated server can
 ## decide whether somebody may be a class without loading a mesh, an animation set or a
@@ -29,7 +29,7 @@ func _ready() -> void:
 
 
 func _run() -> void:
-	_line("dot-player-class self-test")
+	_line("gs-player-class self-test")
 	_line("")
 
 	_test_defs()
@@ -248,7 +248,7 @@ func _test_rules() -> void:
 	_check(not GSPlayerClassRules.fixed().allow_choice, "and a fixed one lets nobody pick")
 	_check(GSPlayerClassRules.presets().size() == 4, "four presets")
 	_check(GSPlayerClassRules.preset(&"instant") != null, "resolving by name")
-	_check(r.env_prefix() == "DOT_PLAYER_CLASS_", "with the family's config layering")
+	_check(r.env_prefix() == "GS_PLAYER_CLASS_", "with the family's config layering")
 
 
 # --- Assignment -------------------------------------------------------------
@@ -729,7 +729,7 @@ func _put(rel: String, text: String) -> void:
 
 
 func _test_profiles() -> void:
-	_section("classes as dot-profile data")
+	_section("classes as gs-profile data")
 
 	var _clean := GSPaths.remove_tree(PROFILE_BASE)
 	var set := GSPlayerClassProfiles.make_set("mygame", PackedStringArray([PROFILE_BASE]))

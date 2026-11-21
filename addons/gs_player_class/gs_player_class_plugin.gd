@@ -3,13 +3,13 @@ extends EditorPlugin
 
 ## Editor entry point for GameSpice Player Class. Registers inspector types only.
 
-const _ICON := "res://addons/dot_player_class/icon_placeholder.svg"
+const _ICON := "res://addons/gs_player_class/icon_placeholder.svg"
 
 const _TYPES := [
 	[
 		"GSPlayerClassManager",
 		"Node",
-		"res://addons/dot_player_class/runtime/dot_player_class_manager.gd",
+		"res://addons/gs_player_class/runtime/gs_player_class_manager.gd",
 	],
 ]
 
