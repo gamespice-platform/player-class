@@ -1,14 +1,14 @@
-class_name DotPlayerClassApply
+class_name GSPlayerClassApply
 extends RefCounted
 
 ## Writes a class's numbers onto health and movement tunables, duck-typed.
 ##
-## Fields are set through [method Object.set] after checking they exist, so no `DotHealth`
+## Fields are set through [method Object.set] after checking they exist, so no `GSHealth`
 ## identifier appears here: naming a `class_name` the project lacks fails the parse.
 ## [codeblock]
 ## var def := classes.def_of(key)
-## DotPlayerClassApply.to_health(def, player.health)
-## DotPlayerClassApply.to_movement(def, player.controller.tunables)
+## GSPlayerClassApply.to_health(def, player.health)
+## GSPlayerClassApply.to_movement(def, player.controller.tunables)
 ## [/codeblock]
 
 const CHANNEL := "player.class.apply"
@@ -43,7 +43,7 @@ static func to_health(
 		health.call("reset", tick)
 
 	if written == 0:
-		DotLog.debug(CHANNEL, "no health fields matched", {"class": _id_of(def)})
+		GSLog.debug(CHANNEL, "no health fields matched", {"class": _id_of(def)})
 
 	return written
 
@@ -62,7 +62,7 @@ static func to_movement(def: Object, tunables: Object, base: Object = null) -> i
 	written += _scale(def, "jump_scale", source, tunables, "jump_height")
 	written += _copy(def, tunables, "mass", "mass")
 
-	# A field at -1 (DotPlayerClassDef.INHERIT) is the game's own value and is left alone.
+	# A field at -1 (GSPlayerClassDef.INHERIT) is the game's own value and is left alone.
 	for pair: Array in MOVEMENT_FIELDS:
 		var v: Variant = def.get(pair[0])
 		if v != null and float(v) >= 0.0 and _has_property(tunables, pair[1]):
@@ -70,7 +70,7 @@ static func to_movement(def: Object, tunables: Object, base: Object = null) -> i
 			written += 1
 
 	if written == 0:
-		DotLog.debug(CHANNEL, "no movement fields matched", {"class": _id_of(def)})
+		GSLog.debug(CHANNEL, "no movement fields matched", {"class": _id_of(def)})
 
 	return written
 

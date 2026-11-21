@@ -14,9 +14,9 @@ Needs Godot 4.7 or newer.
 ## Use
 
 ```gdscript
-var classes := DotPlayerClassManager.new()
-classes.catalogue = DotPlayerClassCatalogue.team_shooter()
-classes.rules     = DotPlayerClassRules.standard()
+var classes := GSPlayerClassManager.new()
+classes.catalogue = GSPlayerClassCatalogue.team_shooter()
+classes.rules     = GSPlayerClassRules.standard()
 classes.team_fn   = func(key): return teams.team_of(key)
 classes.alive_fn  = func(key): return roster.get_record(key).alive
 add_child(classes)
@@ -35,7 +35,7 @@ A class names its loadout, model, animation set and abilities; it does not conta
 
 ## Why a request is refused
 
-Every refusal is a `DotResult` with a message for the player.
+Every refusal is a `GSResult` with a message for the player.
 
 | Rule | Message |
 | --- | --- |
@@ -50,10 +50,10 @@ Every refusal is a `DotResult` with a message for the player.
 
 | Class | Purpose |
 | --- | --- |
-| `DotPlayerClassDef` | One class: health, armour and absorption, movement multipliers, mass, content ids, abilities, team restrictions, limits, entitlement. |
-| `DotPlayerClassCatalogue` | The set of classes. Presets: `single`, `team_shooter` (six classes), `asymmetric`. |
-| `DotPlayerClassRules` | When a choice may be made and when it lands. Presets: `standard`, `instant`, `competitive`, `fixed`. Layered like every `DotConfig`. |
-| `DotPlayerClassManager` | Current and pending class, limits, entitlements, and a mirror for clients. |
+| `GSPlayerClassDef` | One class: health, armour and absorption, movement multipliers, mass, content ids, abilities, team restrictions, limits, entitlement. |
+| `GSPlayerClassCatalogue` | The set of classes. Presets: `single`, `team_shooter` (six classes), `asymmetric`. |
+| `GSPlayerClassRules` | When a choice may be made and when it lands. Presets: `standard`, `instant`, `competitive`, `fixed`. Layered like every `GSConfig`. |
+| `GSPlayerClassManager` | Current and pending class, limits, entitlements, and a mirror for clients. |
 
 Use `single()` for a game without classes, so health and speed come from the same place as in every other mode.
 

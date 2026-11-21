@@ -7,7 +7,7 @@ const _ICON := "res://addons/dot_player_class/icon_placeholder.svg"
 
 const _TYPES := [
 	[
-		"DotPlayerClassManager",
+		"GSPlayerClassManager",
 		"Node",
 		"res://addons/dot_player_class/runtime/dot_player_class_manager.gd",
 	],

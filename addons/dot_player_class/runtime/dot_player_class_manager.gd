@@ -1,4 +1,4 @@
-class_name DotPlayerClassManager
+class_name GSPlayerClassManager
 extends Node
 
 ## Who is what class, who has asked to become something else, and when that lands.
@@ -9,7 +9,7 @@ extends Node
 ## [i]recorded[/i] and the next spawn honours it, and the class-select screen saying
 ## "you will respawn as a medic" is the feature rather than a limitation.
 ##
-## Everything is a [DotResult], because every refusal here has a sentence attached that
+## Everything is a [GSResult], because every refusal here has a sentence attached that
 ## a player needs to read: the side is full of snipers, you do not own that one, the
 ## round has started.
 
@@ -28,9 +28,9 @@ signal class_refused(key: String, to: StringName, why: String)
 
 @export var authoritative: bool = true
 
-@export var catalogue: DotPlayerClassCatalogue = null
+@export var catalogue: GSPlayerClassCatalogue = null
 
-@export var rules: DotPlayerClassRules = null
+@export var rules: GSPlayerClassRules = null
 
 @export var register_service: bool = true
 
@@ -58,21 +58,21 @@ var _pending: Dictionary = {}
 
 func _ready() -> void:
 	if catalogue == null:
-		catalogue = DotPlayerClassCatalogue.single()
+		catalogue = GSPlayerClassCatalogue.single()
 
 	if rules == null:
-		rules = DotPlayerClassRules.new()
+		rules = GSPlayerClassRules.new()
 
 	if register_service and authoritative:
-		DotRegistry.register(SERVICE, self)
+		GSRegistry.register(SERVICE, self)
 
 
-func setup() -> DotResult:
+func setup() -> GSResult:
 	if catalogue == null:
-		catalogue = DotPlayerClassCatalogue.single()
+		catalogue = GSPlayerClassCatalogue.single()
 
 	if rules == null:
-		rules = DotPlayerClassRules.new()
+		rules = GSPlayerClassRules.new()
 
 	var built := catalogue.build()
 
@@ -85,23 +85,23 @@ func setup() -> DotResult:
 # --- Membership -------------------------------------------------------------
 
 ## Puts somebody on the fallback class. Idempotent.
-func add(key: String) -> DotResult:
+func add(key: String) -> GSResult:
 	if not authoritative:
 		return _refuse_mirror("add")
 
 	if _current.has(key):
-		return DotResult.success(_current[key])
+		return GSResult.success(_current[key])
 
 	var fallback := catalogue.fallback_for(_team(key))
 
 	if fallback == null:
-		return DotResult.fail(
-			DotError.CODE_STATE, "The catalogue has no class anybody can be."
+		return GSResult.fail(
+			GSError.CODE_STATE, "The catalogue has no class anybody can be."
 		)
 
 	_current[key] = fallback.id
 	class_changed.emit(key, &"", fallback.id)
-	return DotResult.success(fallback.id)
+	return GSResult.success(fallback.id)
 
 
 func remove(key: String) -> void:
@@ -124,7 +124,7 @@ func has_pending(key: String) -> bool:
 
 
 ## The definition somebody is currently playing, or null.
-func def_of(key: String) -> DotPlayerClassDef:
+func def_of(key: String) -> GSPlayerClassDef:
 	return catalogue.get_class_def(class_of(key))
 
 
@@ -161,7 +161,7 @@ func count_on_team(team: StringName, class_id: StringName) -> int:
 ## deferred, and success with the class that is now current when it is immediate. The
 ## caller can tell the two apart with [method has_pending], and both are successes
 ## because both mean "yes" from the player's point of view.
-func request(key: String, class_id: StringName, tick: int = 0) -> DotResult:
+func request(key: String, class_id: StringName, tick: int = 0) -> GSResult:
 	if not authoritative:
 		return _refuse_mirror("request")
 
@@ -174,13 +174,13 @@ func request(key: String, class_id: StringName, tick: int = 0) -> DotResult:
 
 	if why != "":
 		class_refused.emit(key, class_id, why)
-		return DotResult.fail(DotError.CODE_FORBIDDEN, why)
+		return GSResult.fail(GSError.CODE_FORBIDDEN, why)
 
 	var current: StringName = _current[key]
 
 	if current == class_id:
 		_pending.erase(key)
-		return DotResult.success(class_id)
+		return GSResult.success(class_id)
 
 	var immediate := not rules.apply_on_respawn
 
@@ -193,37 +193,37 @@ func request(key: String, class_id: StringName, tick: int = 0) -> DotResult:
 		return force(key, class_id)
 
 	_pending[key] = class_id
-	DotLog.debug(CHANNEL, "class pending", {
+	GSLog.debug(CHANNEL, "class pending", {
 		"key": key, "to": String(class_id), "tick": tick
 	})
 	class_pending.emit(key, class_id, current)
-	return DotResult.success(class_id)
+	return GSResult.success(class_id)
 
 
 ## Sets a class regardless of the rules. For a console command or a game mode.
-func force(key: String, class_id: StringName) -> DotResult:
+func force(key: String, class_id: StringName) -> GSResult:
 	if not authoritative:
 		return _refuse_mirror("force")
 
 	if not catalogue.has_class(class_id):
-		return DotResult.fail(
-			DotError.CODE_INVALID, "No such class: '%s'." % String(class_id)
+		return GSResult.fail(
+			GSError.CODE_INVALID, "No such class: '%s'." % String(class_id)
 		)
 
 	var from: StringName = _current.get(key, &"")
 
 	if from == class_id:
 		_pending.erase(key)
-		return DotResult.success(class_id)
+		return GSResult.success(class_id)
 
 	_current[key] = class_id
 	_pending.erase(key)
 
-	DotLog.info(CHANNEL, "class changed", {
+	GSLog.info(CHANNEL, "class changed", {
 		"key": key, "from": String(from), "to": String(class_id)
 	})
 	class_changed.emit(key, from, class_id)
-	return DotResult.success(class_id)
+	return GSResult.success(class_id)
 
 
 ## Applies a pending choice. Call on every spawn, before the class is read.
@@ -243,7 +243,7 @@ func apply_pending(key: String) -> StringName:
 		# change that is never going to happen.
 		_pending.erase(key)
 		class_refused.emit(key, wanted, why)
-		DotLog.debug(CHANNEL, "pending class no longer allowed", {"key": key, "why": why})
+		GSLog.debug(CHANNEL, "pending class no longer allowed", {"key": key, "why": why})
 		return class_of(key)
 
 	var _res := force(key, wanted)
@@ -340,7 +340,7 @@ func describe_lines() -> PackedStringArray:
 
 
 func describe() -> String:
-	return "DotPlayerClassManager(%d players, %d pending)" % [_current.size(), _pending.size()]
+	return "GSPlayerClassManager(%d players, %d pending)" % [_current.size(), _pending.size()]
 
 
 # --- Mirroring --------------------------------------------------------------
@@ -354,23 +354,23 @@ func to_wire() -> Dictionary:
 	return {"classes": rows}
 
 
-func apply_wire(payload: Dictionary) -> DotResult:
+func apply_wire(payload: Dictionary) -> GSResult:
 	if authoritative:
-		return DotResult.fail(
-			DotError.CODE_FORBIDDEN, "An authoritative class manager is not told."
+		return GSResult.fail(
+			GSError.CODE_FORBIDDEN, "An authoritative class manager is not told."
 		)
 
 	var rows: Variant = payload.get("classes", {})
 
 	if not (rows is Dictionary):
-		return DotResult.fail(DotError.CODE_PARSE, "A class payload has no assignments.")
+		return GSResult.fail(GSError.CODE_PARSE, "A class payload has no assignments.")
 
 	_current.clear()
 
 	for key: Variant in (rows as Dictionary).keys():
 		_current[String(key)] = StringName(str((rows as Dictionary)[key]))
 
-	return DotResult.success(_current.size())
+	return GSResult.success(_current.size())
 
 
 # --- Internals --------------------------------------------------------------
@@ -428,8 +428,8 @@ func _is_live() -> bool:
 	return bool(live_fn.call()) if live_fn.is_valid() else false
 
 
-func _refuse_mirror(what: String) -> DotResult:
-	return DotResult.fail(
-		DotError.CODE_FORBIDDEN,
+func _refuse_mirror(what: String) -> GSResult:
+	return GSResult.fail(
+		GSError.CODE_FORBIDDEN,
 		"A mirrored class manager decides nothing; it is told. ('%s')" % what
 	)

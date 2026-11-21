@@ -1,5 +1,5 @@
 @tool
-class_name DotPlayerClassDef
+class_name GSPlayerClassDef
 extends Resource
 
 ## One playable class: what it has, what it can do, and who may take it.
@@ -72,7 +72,7 @@ const INHERITING: Array[String] = [
 ## Carry capacity in the game's weight unit; [constant INHERIT] keeps the game's.
 @export_range(-1.0, 1000.0, 0.5) var carry_limit: float = INHERIT
 
-## Dropped weapons (GameSpice Weapon's DotWeaponDropRules.resolve reads these by name); each
+## Dropped weapons (GameSpice Weapon's GSWeaponDropRules.resolve reads these by name); each
 ## [constant INHERIT] keeps the server's rule. The two switches are 0 (off) or 1 (on); the lifetime
 ## is seconds with 0 meaning it never vanishes.
 @export_range(-1.0, 1.0, 1.0) var drop_allowed: float = INHERIT
@@ -136,7 +136,7 @@ const INHERITING: Array[String] = [
 
 @export_group("Anything else")
 
-## Open-ended per-class data, the way [code]DotTeamDef.attributes[/code] is.
+## Open-ended per-class data, the way [code]GSTeamDef.attributes[/code] is.
 @export var attributes: Dictionary = {}
 
 
@@ -144,8 +144,8 @@ static func make(
 	p_id: StringName,
 	p_health: float = 100.0,
 	p_speed: float = 1.0
-) -> DotPlayerClassDef:
-	var c := DotPlayerClassDef.new()
+) -> GSPlayerClassDef:
+	var c := GSPlayerClassDef.new()
 	c.id = p_id
 	c.display_name = String(p_id).capitalize()
 	c.max_health = p_health
@@ -153,20 +153,20 @@ static func make(
 	return c
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	if id == &"":
-		return DotResult.fail(DotError.CODE_INVALID, "A class with no id cannot be asked for.")
+		return GSResult.fail(GSError.CODE_INVALID, "A class with no id cannot be asked for.")
 
 	for f: String in INHERITING:
 		var v: float = get(f)
 		if not is_finite(v) or (v < 0.0 and v != INHERIT):
-			return DotResult.fail(
-				DotError.CODE_INVALID, "'%s' has %s %s; use a number from 0 up, or -1 to keep the game's." % [String(id), f, str(v)]
+			return GSResult.fail(
+				GSError.CODE_INVALID, "'%s' has %s %s; use a number from 0 up, or -1 to keep the game's." % [String(id), f, str(v)]
 			)
 
 	if max_health <= 0.0:
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"'%s' has %0.1f health, so it is dead the moment it spawns." % [String(id), max_health]
 		)
 
@@ -174,13 +174,13 @@ func validate() -> DotResult:
 		# Not an error: a class that gains armour from a pickup starts with none and
 		# absorbs when it has some. Worth saying, because the other reading — somebody
 		# set absorption and forgot the armour — is more common.
-		DotLog.debug(
+		GSLog.debug(
 			"player.class",
 			"a class absorbs damage with armour and starts with none",
 			{"class": String(id)}
 		)
 
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 ## Whether a side may field this class at all.
@@ -251,8 +251,8 @@ func to_dict() -> Dictionary:
 	}
 
 
-static func from_dict(d: Dictionary) -> DotPlayerClassDef:
-	var c := DotPlayerClassDef.new()
+static func from_dict(d: Dictionary) -> GSPlayerClassDef:
+	var c := GSPlayerClassDef.new()
 	c.id = StringName(str(d.get("id", "")))
 	c.display_name = str(d.get("name", String(c.id).capitalize()))
 	c.max_health = float(d.get("health", 100.0))
@@ -306,4 +306,4 @@ func _strings(list: Array[StringName]) -> Array:
 
 
 func _to_string() -> String:
-	return "DotPlayerClassDef(%s)" % describe()
+	return "GSPlayerClassDef(%s)" % describe()

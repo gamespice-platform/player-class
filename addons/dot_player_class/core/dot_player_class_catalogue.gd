@@ -1,5 +1,5 @@
 @tool
-class_name DotPlayerClassCatalogue
+class_name GSPlayerClassCatalogue
 extends Resource
 
 ## Every class a session has, and the presets that cover the usual shapes.
@@ -8,7 +8,7 @@ const CHANNEL := "player.class"
 
 @export var id: StringName = &""
 
-@export var classes: Array[DotPlayerClassDef] = []
+@export var classes: Array[GSPlayerClassDef] = []
 
 ## The class somebody gets if they never pick one. Empty means the first selectable.
 @export var default_class: StringName = &""
@@ -17,15 +17,15 @@ var _by_id: Dictionary = {}
 var _built: bool = false
 
 
-func build() -> DotResult:
+func build() -> GSResult:
 	_by_id.clear()
 
 	if classes.is_empty():
-		return DotResult.fail(DotError.CODE_INVALID, "A catalogue with no classes.")
+		return GSResult.fail(GSError.CODE_INVALID, "A catalogue with no classes.")
 
 	for c in classes:
 		if c == null:
-			return DotResult.fail(DotError.CODE_INVALID, "A null class in the catalogue.")
+			return GSResult.fail(GSError.CODE_INVALID, "A null class in the catalogue.")
 
 		var valid := c.validate()
 
@@ -33,8 +33,8 @@ func build() -> DotResult:
 			return valid.wrap("This catalogue was not built")
 
 		if _by_id.has(c.id):
-			return DotResult.fail(
-				DotError.CODE_INVALID,
+			return GSResult.fail(
+				GSError.CODE_INVALID,
 				"Two classes are called '%s'." % String(c.id),
 				"Every lookup would answer about the second one, silently."
 			)
@@ -42,21 +42,21 @@ func build() -> DotResult:
 		_by_id[c.id] = c
 
 	if default_class != &"" and not _by_id.has(default_class):
-		return DotResult.fail(
-			DotError.CODE_INVALID,
+		return GSResult.fail(
+			GSError.CODE_INVALID,
 			"The default class '%s' is not in the catalogue." % String(default_class),
 			"Everybody who never picks would be assigned a class that does not exist."
 		)
 
 	_built = true
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 func _ensure_built() -> void:
 	if not _built or _by_id.size() != classes.size():
 		var res := build()
 		if not res.ok:
-			DotLog.error(CHANNEL, "catalogue unusable", {"why": res.error.message})
+			GSLog.error(CHANNEL, "catalogue unusable", {"why": res.error.message})
 
 
 func has_class(class_id: StringName) -> bool:
@@ -64,7 +64,7 @@ func has_class(class_id: StringName) -> bool:
 	return _by_id.has(class_id)
 
 
-func get_class_def(class_id: StringName) -> DotPlayerClassDef:
+func get_class_def(class_id: StringName) -> GSPlayerClassDef:
 	_ensure_built()
 	return _by_id.get(class_id, null)
 
@@ -98,11 +98,11 @@ func ids_for_team(team: StringName) -> Array[StringName]:
 ## class, or — if a mode has disabled every one of them — the first class at all.
 ## Returning null would push the problem into a spawn path that has nothing to do with
 ## class selection, which is where it would be debugged.
-func fallback_for(team: StringName = &"") -> DotPlayerClassDef:
+func fallback_for(team: StringName = &"") -> GSPlayerClassDef:
 	_ensure_built()
 
 	if default_class != &"" and _by_id.has(default_class):
-		var declared: DotPlayerClassDef = _by_id[default_class]
+		var declared: GSPlayerClassDef = _by_id[default_class]
 		if declared.allows_team(team):
 			return declared
 
@@ -130,7 +130,7 @@ func describe_lines() -> PackedStringArray:
 
 
 func describe() -> String:
-	return "DotPlayerClassCatalogue(%s, %d)" % [String(id), classes.size()]
+	return "GSPlayerClassCatalogue(%s, %d)" % [String(id), classes.size()]
 
 
 func _to_string() -> String:
@@ -145,11 +145,11 @@ func _to_string() -> String:
 ## models itself as having no catalogue makes every consumer branch on whether classes
 ## exist; one class makes the health, the speed and the loadout id come from the same
 ## place they do in every other mode.
-static func single(p_health: float = 100.0) -> DotPlayerClassCatalogue:
-	var cat := DotPlayerClassCatalogue.new()
+static func single(p_health: float = 100.0) -> GSPlayerClassCatalogue:
+	var cat := GSPlayerClassCatalogue.new()
 	cat.id = &"single"
 
-	var only := DotPlayerClassDef.make(&"default", p_health, 1.0)
+	var only := GSPlayerClassDef.make(&"default", p_health, 1.0)
 	only.display_name = "Player"
 	only.description = "The only class."
 
@@ -165,39 +165,39 @@ static func single(p_health: float = 100.0) -> DotPlayerClassCatalogue:
 ## speed, the scout is the reverse — because those are what a game tunes and what a
 ## project writing this from scratch has to discover. Every content id is empty: the
 ## catalogue names what a class is like, and a game names what it looks like.
-static func team_shooter() -> DotPlayerClassCatalogue:
-	var cat := DotPlayerClassCatalogue.new()
+static func team_shooter() -> GSPlayerClassCatalogue:
+	var cat := GSPlayerClassCatalogue.new()
 	cat.id = &"team_shooter"
 
-	var assault := DotPlayerClassDef.make(&"assault", 125.0, 1.0)
+	var assault := GSPlayerClassDef.make(&"assault", 125.0, 1.0)
 	assault.description = "The baseline. Everything else is described relative to it."
 	assault.max_armour = 50.0
 
-	var scout := DotPlayerClassDef.make(&"scout", 85.0, 1.35)
+	var scout := GSPlayerClassDef.make(&"scout", 85.0, 1.35)
 	scout.description = "Fast and fragile. Takes ground; cannot hold it."
 	scout.jump_scale = 1.2
 	scout.knockback_scale = 1.4
 	scout.mass = 60.0
 
-	var heavy := DotPlayerClassDef.make(&"heavy", 250.0, 0.7)
+	var heavy := GSPlayerClassDef.make(&"heavy", 250.0, 0.7)
 	heavy.description = "Slow and hard to move. Holds ground; cannot take it."
 	heavy.max_armour = 100.0
 	heavy.knockback_scale = 0.5
 	heavy.mass = 130.0
 	heavy.limit_per_team = 2
 
-	var medic := DotPlayerClassDef.make(&"medic", 110.0, 1.15)
+	var medic := GSPlayerClassDef.make(&"medic", 110.0, 1.15)
 	medic.description = "Keeps other people alive, and regenerates alone."
 	medic.regen_per_second = 4.0
 	medic.regen_delay_sec = 3.0
 	medic.abilities = [&"heal_beam"]
 
-	var engineer := DotPlayerClassDef.make(&"engineer", 110.0, 0.95)
+	var engineer := GSPlayerClassDef.make(&"engineer", 110.0, 0.95)
 	engineer.description = "Builds. Everything it builds is somebody else's problem."
 	engineer.abilities = [&"build", &"repair"]
 	engineer.limit_per_team = 2
 
-	var sniper := DotPlayerClassDef.make(&"sniper", 90.0, 0.9)
+	var sniper := GSPlayerClassDef.make(&"sniper", 90.0, 0.9)
 	sniper.description = "Range. A team of nine of these is why limits exist."
 	sniper.abilities = [&"scope"]
 	sniper.limit_per_team = 2
@@ -212,25 +212,25 @@ static func team_shooter() -> DotPlayerClassCatalogue:
 static func asymmetric(
 	attackers: StringName = &"attackers",
 	defenders: StringName = &"defenders"
-) -> DotPlayerClassCatalogue:
-	var cat := DotPlayerClassCatalogue.new()
+) -> GSPlayerClassCatalogue:
+	var cat := GSPlayerClassCatalogue.new()
 	cat.id = &"asymmetric"
 
-	var raider := DotPlayerClassDef.make(&"raider", 120.0, 1.1)
+	var raider := GSPlayerClassDef.make(&"raider", 120.0, 1.1)
 	raider.teams = [attackers]
 	raider.description = "Attacks. Faster, and there are more of them."
 
-	var breacher := DotPlayerClassDef.make(&"breacher", 160.0, 0.9)
+	var breacher := GSPlayerClassDef.make(&"breacher", 160.0, 0.9)
 	breacher.teams = [attackers]
 	breacher.limit_per_team = 1
 	breacher.abilities = [&"breach"]
 
-	var guard := DotPlayerClassDef.make(&"guard", 150.0, 0.95)
+	var guard := GSPlayerClassDef.make(&"guard", 150.0, 0.95)
 	guard.teams = [defenders]
 	guard.description = "Defends. Tougher, and outnumbered."
 	guard.max_armour = 75.0
 
-	var watcher := DotPlayerClassDef.make(&"watcher", 100.0, 1.0)
+	var watcher := GSPlayerClassDef.make(&"watcher", 100.0, 1.0)
 	watcher.teams = [defenders]
 	watcher.abilities = [&"cameras"]
 	watcher.limit_per_team = 1
@@ -243,17 +243,17 @@ static func asymmetric(
 
 static func presets() -> Dictionary:
 	return {
-		&"single": Callable(DotPlayerClassCatalogue, "single"),
-		&"team_shooter": Callable(DotPlayerClassCatalogue, "team_shooter"),
-		&"asymmetric": Callable(DotPlayerClassCatalogue, "asymmetric"),
+		&"single": Callable(GSPlayerClassCatalogue, "single"),
+		&"team_shooter": Callable(GSPlayerClassCatalogue, "team_shooter"),
+		&"asymmetric": Callable(GSPlayerClassCatalogue, "asymmetric"),
 	}
 
 
-static func preset(p_id: StringName) -> DotPlayerClassCatalogue:
+static func preset(p_id: StringName) -> GSPlayerClassCatalogue:
 	var table := presets()
 
 	if not table.has(p_id):
 		return null
 
 	var fn: Callable = table[p_id]
-	return fn.call() as DotPlayerClassCatalogue
+	return fn.call() as GSPlayerClassCatalogue

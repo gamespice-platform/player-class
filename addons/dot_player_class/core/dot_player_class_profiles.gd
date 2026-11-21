@@ -1,7 +1,7 @@
-class_name DotPlayerClassProfiles
+class_name GSPlayerClassProfiles
 extends RefCounted
 
-## Loads [DotPlayerClassDef] from `class` profiles (cfg/addon/dot-player-class/class, cfg/game/<game>/class, cfg/server/...).
+## Loads [GSPlayerClassDef] from `class` profiles (cfg/addon/dot-player-class/class, cfg/game/<game>/class, cfg/server/...).
 ##
 ## A server owner edits a yml, not code. Ranges are the schema's, so an unsafe value is refused on load.
 
@@ -11,7 +11,7 @@ const KIND := "class"
 
 ## Every def field a server may tune; ids and content references stay strings.
 static func schema() -> Array:
-	var f := DotProfileSet.field
+	var f := GSProfileSet.field
 	var inherit := {"min": -1.0, "max": 10.0}
 	return [
 		f.call("name", "string", ""),
@@ -22,20 +22,20 @@ static func schema() -> Array:
 		f.call("regen_per_second", "float", 0.0, {"min": 0.0, "max": 1000.0}),
 		f.call("regen_delay_sec", "float", 5.0, {"min": 0.0, "max": 60.0}),
 		f.call("speed", "float", 1.0, {"min": 0.05, "max": 10.0}),
-		f.call("walk_speed_scale", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
-		f.call("sprint_speed_scale", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 3.0}),
-		f.call("crouch_speed_scale", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
-		f.call("stamina_drain", "float", DotPlayerClassDef.INHERIT, inherit),
-		f.call("stamina_recover", "float", DotPlayerClassDef.INHERIT, inherit),
-		f.call("stamina_resume_at", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
-		f.call("stamina_exhaust_delay", "float", DotPlayerClassDef.INHERIT, inherit),
-		f.call("carry_limit", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 1000.0}),
-		f.call("drop_allowed", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
-		f.call("drop_on_death", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
-		f.call("drop_lifetime", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 3600.0}),
-		f.call("drop_throw_force", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 40.0}),
-		f.call("drop_throw_up", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 20.0}),
-		f.call("drop_pickup_radius", "float", DotPlayerClassDef.INHERIT, {"min": -1.0, "max": 6.0}),
+		f.call("walk_speed_scale", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
+		f.call("sprint_speed_scale", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 3.0}),
+		f.call("crouch_speed_scale", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
+		f.call("stamina_drain", "float", GSPlayerClassDef.INHERIT, inherit),
+		f.call("stamina_recover", "float", GSPlayerClassDef.INHERIT, inherit),
+		f.call("stamina_resume_at", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
+		f.call("stamina_exhaust_delay", "float", GSPlayerClassDef.INHERIT, inherit),
+		f.call("carry_limit", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 1000.0}),
+		f.call("drop_allowed", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
+		f.call("drop_on_death", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 1.0}),
+		f.call("drop_lifetime", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 3600.0}),
+		f.call("drop_throw_force", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 40.0}),
+		f.call("drop_throw_up", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 20.0}),
+		f.call("drop_pickup_radius", "float", GSPlayerClassDef.INHERIT, {"min": -1.0, "max": 6.0}),
 		f.call("jump_scale", "float", 1.0, {"min": 0.0, "max": 10.0}),
 		f.call("knockback_scale", "float", 1.0, {"min": 0.0, "max": 10.0}),
 		f.call("mass", "float", 80.0, {"min": 1.0, "max": 10000.0}),
@@ -58,16 +58,16 @@ static func profile_schemas() -> Dictionary:
 
 
 ## A profile set for classes of [param game]; [param roots] overrides the config roots (tests).
-static func make_set(game: String, roots: PackedStringArray = PackedStringArray()) -> DotProfileSet:
-	var s := DotProfileSet.create(ADDON, game, KIND, schema())
+static func make_set(game: String, roots: PackedStringArray = PackedStringArray()) -> GSProfileSet:
+	var s := GSProfileSet.create(ADDON, game, KIND, schema())
 	s.roots = roots
 	return s
 
 
 ## Builds a def from a loaded profile; the keys are the schema's.
-static func def_from_profile(profile: DotProfile) -> DotPlayerClassDef:
+static func def_from_profile(profile: GSProfile) -> GSPlayerClassDef:
 	var v := profile.values
-	var c := DotPlayerClassDef.new()
+	var c := GSPlayerClassDef.new()
 	c.id = StringName(profile.id)
 	c.display_name = str(v["name"]) if str(v["name"]) != "" else profile.id.capitalize()
 	c.description = str(v["description"])
@@ -77,7 +77,7 @@ static func def_from_profile(profile: DotProfile) -> DotPlayerClassDef:
 	c.regen_per_second = float(v["regen_per_second"])
 	c.regen_delay_sec = float(v["regen_delay_sec"])
 	c.move_speed_scale = float(v["speed"])
-	for field: String in DotPlayerClassDef.INHERITING:
+	for field: String in GSPlayerClassDef.INHERITING:
 		c.set(field, float(v[field]))
 	c.jump_scale = float(v["jump_scale"])
 	c.knockback_scale = float(v["knockback_scale"])
@@ -99,8 +99,8 @@ static func def_from_profile(profile: DotProfile) -> DotPlayerClassDef:
 	return c
 
 
-## Loads one class; the value of the result is a validated [DotPlayerClassDef].
-static func load_def(profiles: DotProfileSet, id: String) -> DotResult:
+## Loads one class; the value of the result is a validated [GSPlayerClassDef].
+static func load_def(profiles: GSProfileSet, id: String) -> GSResult:
 	var res := profiles.load_profile(id)
 	if not res.ok:
 		return res
@@ -108,12 +108,12 @@ static func load_def(profiles: DotProfileSet, id: String) -> DotResult:
 	var checked := def.validate()
 	if not checked.ok:
 		return checked
-	return DotResult.success(def)
+	return GSResult.success(def)
 
 
 ## Every loadable class as a catalogue; failures are appended to [param errors].
-static func to_catalogue(profiles: DotProfileSet, errors: PackedStringArray = PackedStringArray()) -> DotPlayerClassCatalogue:
-	var cat := DotPlayerClassCatalogue.new()
+static func to_catalogue(profiles: GSProfileSet, errors: PackedStringArray = PackedStringArray()) -> GSPlayerClassCatalogue:
+	var cat := GSPlayerClassCatalogue.new()
 	for id in profiles.list_ids():
 		var res := load_def(profiles, id)
 		if res.ok:

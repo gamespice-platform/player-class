@@ -6,11 +6,11 @@ Why the addon is shaped the way it is. The one-line rules are in [CLAUDE.md](../
 
 **A class change is a request, recorded, that the next spawn honours.**
 
-Everything else follows. It is why `request()` returns a `DotResult` rather than being a setter; why there is a `_pending` dictionary at all; why `apply_pending` returns the class being spawned as rather than `void`; and why a refusal carries a sentence instead of a boolean.
+Everything else follows. It is why `request()` returns a `GSResult` rather than being a setter; why there is a `_pending` dictionary at all; why `apply_pending` returns the class being spawned as rather than `void`; and why a refusal carries a sentence instead of a boolean.
 
 The reason is not tidiness. Changing class mid-fight changes health, speed and weapons while somebody is shooting at you, and the outcome is an exploit or a bug report depending on who wins. The class screen saying "you will respawn as a medic" is the feature.
 
-The second idea is dot-user-avatar's and dot-loadout's, restated: **a dedicated server decides whether somebody may be a class without loading any content.** Every field in `DotPlayerClassDef` is a number or an id. The suite loads nothing, which is the check.
+The second idea is dot-user-avatar's and dot-loadout's, restated: **a dedicated server decides whether somebody may be a class without loading any content.** Every field in `GSPlayerClassDef` is a number or an id. The suite loads nothing, which is the check.
 
 ## `get_class_def`, not `get_class`
 
@@ -40,11 +40,11 @@ It does not apply anything. It never sets health, never touches a controller's s
 
 It does not know what a spawn is either: `apply_pending` is called by whatever spawns.
 
-## `DotPlayerClassApply`: the seam, and why it is duck-typed
+## `GSPlayerClassApply`: the seam, and why it is duck-typed
 
-A class carries `max_health`, `max_armour`, regeneration, a move-speed scale, a jump scale, a knockback scale and a mass. Those belong to GameSpice Combat and GameSpice Player Controller, neither of which this addon depends on or wants to: a `DotPlayerClassDef` that named `DotHealth` would be a class document a dedicated server could not validate without installing a combat addon, which is the whole thing this addon promises not to need.
+A class carries `max_health`, `max_armour`, regeneration, a move-speed scale, a jump scale, a knockback scale and a mass. Those belong to GameSpice Combat and GameSpice Player Controller, neither of which this addon depends on or wants to: a `GSPlayerClassDef` that named `GSHealth` would be a class document a dedicated server could not validate without installing a combat addon, which is the whole thing this addon promises not to need.
 
-So the bridge writes through `Object.set` after `Object.get` has shown the field exists, the same way `DotTeamRoster.bind_match` drives dot-match. **No `DotHealth` or `DotFpsTunables` identifier appears in the file**, which is not a style point: a script that merely mentions a `class_name` the project does not have fails to parse and takes every script referencing it down with it.
+So the bridge writes through `Object.set` after `Object.get` has shown the field exists, the same way `GSTeamRoster.bind_match` drives dot-match. **No `GSHealth` or `GSFpsTunables` identifier appears in the file**, which is not a style point: a script that merely mentions a `class_name` the project does not have fails to parse and takes every script referencing it down with it.
 
 It exists because games had each been about to write the same six lines and had instead written none: the manager decided who was what and emitted it, and the numbers on the document were read by nobody.
 
@@ -57,13 +57,13 @@ The suite stands it up against **stubs** rather than against the real classes, a
 
 ## Classes as GameSpice Profile data
 
-`DotPlayerClassProfiles` is the dot-profile schema for kind `class`, so an operator edits a yml (`cfg/server/game/<game>/class/<id>.yml`) instead of code, with the usual layers (defaults < addon < game < server < environment < command line, and the runtime layer). Walk, sprint and crouch scales, the four stamina numbers and `carry_limit` default to `DotPlayerClassDef.INHERIT` (-1): the class does not set them and the game's own tunable stands, which keeps one source per number (Zombie Zone's `ZzConfig` stays the default, the class only overrides). `move_speed_scale` (`speed` in the yml) multiplies the run speed. `to_movement` writes only the fields the class sets; `DotPlayerClassApply.carry_limit(def, fallback)` answers the capacity. Out-of-range values and unknown keys fail the load (the schema's), and `validate()` refuses a negative that is not -1. A change applies where the game re-reads the profile, normally the next spawn.
+`GSPlayerClassProfiles` is the dot-profile schema for kind `class`, so an operator edits a yml (`cfg/server/game/<game>/class/<id>.yml`) instead of code, with the usual layers (defaults < addon < game < server < environment < command line, and the runtime layer). Walk, sprint and crouch scales, the four stamina numbers and `carry_limit` default to `GSPlayerClassDef.INHERIT` (-1): the class does not set them and the game's own tunable stands, which keeps one source per number (Zombie Zone's `ZzConfig` stays the default, the class only overrides). `move_speed_scale` (`speed` in the yml) multiplies the run speed. `to_movement` writes only the fields the class sets; `GSPlayerClassApply.carry_limit(def, fallback)` answers the capacity. Out-of-range values and unknown keys fail the load (the schema's), and `validate()` refuses a negative that is not -1. A change applies where the game re-reads the profile, normally the next spawn.
 
 
 ### Editing a class (server owner)
 
-Copy only the keys you change into `cfg/server/game/<game>/class/<id>.yml`; the keys are `DotPlayerClassProfiles.schema()` and the full list with ranges is in GameSpice Profile's `docs/profiles.md`. Ranges are enforced on load (unsafe values and unknown keys refuse the file, the shipped class stays), `-1` keeps the game's number, and a layer above the server file (environment, command line) wins. Checked by `examples/class_selftest`.
+Copy only the keys you change into `cfg/server/game/<game>/class/<id>.yml`; the keys are `GSPlayerClassProfiles.schema()` and the full list with ranges is in GameSpice Profile's `docs/profiles.md`. Ranges are enforced on load (unsafe values and unknown keys refuse the file, the shipped class stays), `-1` keeps the game's number, and a layer above the server file (environment, command line) wins. Checked by `examples/class_selftest`.
 
 ## Damage immunity
 
-A class profile may list `immune: [fall, fire]` (damage type ids, or `all`); `DotPlayerClassDef.immune_to` carries it and `DotPlayerClassApply.to_immunity(def, immunity, entity)` writes it onto GameSpice Combat's `DotDamageImmunity` at spawn, which the resolver consults first. Empty by default, so no game changes. It is an ordinary schema field, so the workbench class editor shows it as a list. A class with none clears the entity's entry, so a respawn does not keep the old class's immunities.
+A class profile may list `immune: [fall, fire]` (damage type ids, or `all`); `GSPlayerClassDef.immune_to` carries it and `GSPlayerClassApply.to_immunity(def, immunity, entity)` writes it onto GameSpice Combat's `GSDamageImmunity` at spawn, which the resolver consults first. Empty by default, so no game changes. It is an ordinary schema field, so the workbench class editor shows it as a list. A class with none clears the entity's entry, so a respawn does not keep the old class's immunities.

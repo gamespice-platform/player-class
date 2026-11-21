@@ -1,6 +1,6 @@
 @tool
-class_name DotPlayerClassRules
-extends DotConfig
+class_name GSPlayerClassRules
+extends GSConfig
 
 ## When a class may be chosen, when the choice takes effect, and what is enforced.
 
@@ -15,13 +15,13 @@ extends DotConfig
 ## Whether per-class team limits are enforced.
 ##
 ## Off, a limit is decoration. On, class assignment has to be a request that can be
-## refused — which is why [method DotPlayerClassManager.request] returns a [DotResult]
+## refused — which is why [method GSPlayerClassManager.request] returns a [GSResult]
 ## rather than being a setter.
 @export var enforce_limits: bool = true
 
 ## Whether a player may be refused a class their entitlement does not cover.
 ##
-## The check itself is the game's, through [member DotPlayerClassManager.entitled_fn].
+## The check itself is the game's, through [member GSPlayerClassManager.entitled_fn].
 ## This only decides whether it is consulted.
 @export var enforce_entitlements: bool = true
 
@@ -66,21 +66,21 @@ func cli_prefix() -> String:
 	return "--class-"
 
 
-func validate() -> DotResult:
+func validate() -> GSResult:
 	if not allow_choice and not apply_on_respawn:
 		# Legal, and meaningless: nobody chooses, so nothing is ever pending.
-		DotLog.debug("player.class", "choice is off; apply_on_respawn has nothing to do")
+		GSLog.debug("player.class", "choice is off; apply_on_respawn has nothing to do")
 
 	if enforce_entitlements and not allow_choice:
-		DotLog.debug("player.class", "entitlements are enforced on a choice nobody makes")
+		GSLog.debug("player.class", "entitlements are enforced on a choice nobody makes")
 
-	return DotResult.success(null)
+	return GSResult.success(null)
 
 
 # --- Presets ----------------------------------------------------------------
 
 ## Pick freely, land on the next spawn, limits enforced. The usual team shooter.
-static func standard() -> DotPlayerClassRules:
+static func standard() -> GSPlayerClassRules:
 	# Not this class's own name. A script that names itself in an expression, loaded after
 	# its base, cuts Godot 4.7.2's exit teardown short and leaks every script loaded before
 	# it. See docs/gdscript-hazards.md, "A script that names itself".
@@ -88,7 +88,7 @@ static func standard() -> DotPlayerClassRules:
 
 
 ## Pick freely and land immediately. A sandbox, a lobby, a practice server.
-static func instant() -> DotPlayerClassRules:
+static func instant() -> GSPlayerClassRules:
 	var r := new()
 	r.apply_on_respawn = false
 	r.enforce_limits = false
@@ -96,7 +96,7 @@ static func instant() -> DotPlayerClassRules:
 
 
 ## Locked once the round is live. A competitive mode.
-static func competitive() -> DotPlayerClassRules:
+static func competitive() -> GSPlayerClassRules:
 	var r := new()
 	r.allow_midround_change = false
 	r.enforce_limits = true
@@ -106,7 +106,7 @@ static func competitive() -> DotPlayerClassRules:
 
 
 ## No choosing at all. A game with one class, or one a mode assigns.
-static func fixed() -> DotPlayerClassRules:
+static func fixed() -> GSPlayerClassRules:
 	var r := new()
 	r.allow_choice = false
 	r.allow_midround_change = false
@@ -122,7 +122,7 @@ static func presets() -> Dictionary:
 	}
 
 
-static func preset(p_id: StringName) -> DotPlayerClassRules:
+static func preset(p_id: StringName) -> GSPlayerClassRules:
 	var table := presets()
 
 	if not table.has(p_id):

@@ -24,7 +24,7 @@ var _live := false
 
 
 func _ready() -> void:
-	DotLog.set_level(DotLog.Level.ERROR)
+	GSLog.set_level(GSLog.Level.ERROR)
 	_run()
 
 
@@ -62,12 +62,12 @@ func _run() -> void:
 
 
 func _manager(
-	cat: DotPlayerClassCatalogue = null,
-	rules: DotPlayerClassRules = null
-) -> DotPlayerClassManager:
-	var m := DotPlayerClassManager.new()
-	m.catalogue = cat if cat != null else DotPlayerClassCatalogue.team_shooter()
-	m.rules = rules if rules != null else DotPlayerClassRules.new()
+	cat: GSPlayerClassCatalogue = null,
+	rules: GSPlayerClassRules = null
+) -> GSPlayerClassManager:
+	var m := GSPlayerClassManager.new()
+	m.catalogue = cat if cat != null else GSPlayerClassCatalogue.team_shooter()
+	m.rules = rules if rules != null else GSPlayerClassRules.new()
 	m.register_service = false
 	m.team_fn = func(key: String) -> StringName: return StringName(str(_teams.get(key, "")))
 	m.alive_fn = func(key: String) -> bool: return bool(_alive.get(key, false))
@@ -84,7 +84,7 @@ func _manager(
 func _test_defs() -> void:
 	_section("a class definition")
 
-	var c := DotPlayerClassDef.make(&"medic", 110.0, 1.15)
+	var c := GSPlayerClassDef.make(&"medic", 110.0, 1.15)
 	_check(c.validate().ok, "validates")
 	_check(c.display_name == "Medic", "with a name derived from the id")
 	_check(c.allows_team(&"blue"), "and is open to every side by default")
@@ -102,12 +102,12 @@ func _test_defs() -> void:
 	_check(not c.allows_team(&"blue"), "an unselectable class admits nobody")
 	c.selectable = true
 
-	var dead := DotPlayerClassDef.make(&"ghost", 0.0)
+	var dead := GSPlayerClassDef.make(&"ghost", 0.0)
 	_check(
 		not dead.validate().ok,
 		"a class with no health is refused: it is dead the moment it spawns"
 	)
-	_check(not DotPlayerClassDef.new().validate().ok, "and so is one with no id")
+	_check(not GSPlayerClassDef.new().validate().ok, "and so is one with no id")
 
 	c.abilities = [&"heal_beam"]
 	_check(c.has_ability(&"heal_beam"), "abilities are ids")
@@ -119,7 +119,7 @@ func _test_defs() -> void:
 
 	# Armour arithmetic, which lives here so the class screen and the damage model
 	# cannot disagree about what 150 armour means.
-	var armoured := DotPlayerClassDef.make(&"heavy", 250.0)
+	var armoured := GSPlayerClassDef.make(&"heavy", 250.0)
 	armoured.max_armour = 100.0
 	armoured.armour_absorption = 0.5
 
@@ -143,14 +143,14 @@ func _test_defs() -> void:
 		"and the rest gets through — armour cannot absorb more than it has"
 	)
 
-	var wire := DotPlayerClassDef.from_dict(c.to_dict())
+	var wire := GSPlayerClassDef.from_dict(c.to_dict())
 	_check(wire.id == &"medic", "a definition survives a round trip")
 	_check(wire.teams == c.teams, "with its team list")
 	_check(wire.abilities == c.abilities, "and its abilities")
 
 	c.animation_set = &"medic_anims"
 	c.voice_set = &"medic_voice"
-	var ids := DotPlayerClassDef.from_dict(c.to_dict())
+	var ids := GSPlayerClassDef.from_dict(c.to_dict())
 	_check(
 		ids.animation_set == &"medic_anims" and ids.voice_set == &"medic_voice",
 		"and every content id it names — an id declared on the definition and absent "
@@ -162,7 +162,7 @@ func _test_defs() -> void:
 func _test_catalogue() -> void:
 	_section("a catalogue")
 
-	var single := DotPlayerClassCatalogue.single(150.0)
+	var single := GSPlayerClassCatalogue.single(150.0)
 	_check(single.build().ok, "the single-class catalogue builds")
 	_check(single.ids().size() == 1, "with one class")
 	_check(
@@ -175,7 +175,7 @@ func _test_catalogue() -> void:
 		+ "whether classes exist"
 	)
 
-	var shooter := DotPlayerClassCatalogue.team_shooter()
+	var shooter := GSPlayerClassCatalogue.team_shooter()
 	_check(shooter.build().ok, "the team-shooter catalogue builds")
 	_check(shooter.ids().size() == 6, "with six classes")
 	_check(
@@ -192,7 +192,7 @@ func _test_catalogue() -> void:
 	_check(shooter.get_class_def(&"sniper").limit_per_team == 2, "the sniper is limited")
 	_check(shooter.fallback_for(&"").id == &"assault", "and the default is the baseline")
 
-	var asym := DotPlayerClassCatalogue.asymmetric()
+	var asym := GSPlayerClassCatalogue.asymmetric()
 	_check(asym.build().ok, "the asymmetric catalogue builds")
 	_check(asym.ids_for_team(&"attackers").size() == 2, "attackers have two classes")
 	_check(asym.ids_for_team(&"defenders").size() == 2, "and defenders two others")
@@ -201,12 +201,12 @@ func _test_catalogue() -> void:
 		"and a side's fallback is one that side can actually be"
 	)
 
-	var dup := DotPlayerClassCatalogue.new()
-	dup.classes = [DotPlayerClassDef.make(&"a"), DotPlayerClassDef.make(&"a")]
+	var dup := GSPlayerClassCatalogue.new()
+	dup.classes = [GSPlayerClassDef.make(&"a"), GSPlayerClassDef.make(&"a")]
 	_check(not dup.build().ok, "two classes with one name are refused")
 
-	var bad_default := DotPlayerClassCatalogue.new()
-	bad_default.classes = [DotPlayerClassDef.make(&"a")]
+	var bad_default := GSPlayerClassCatalogue.new()
+	bad_default.classes = [GSPlayerClassDef.make(&"a")]
 	bad_default.default_class = &"missing"
 	_check(
 		not bad_default.build().ok,
@@ -214,21 +214,21 @@ func _test_catalogue() -> void:
 		+ "would be assigned a class that does not exist"
 	)
 
-	var broken := DotPlayerClassCatalogue.new()
-	broken.classes = [DotPlayerClassDef.make(&"a", 0.0)]
+	var broken := GSPlayerClassCatalogue.new()
+	broken.classes = [GSPlayerClassDef.make(&"a", 0.0)]
 	_check(not broken.build().ok, "and so is a catalogue holding an invalid class")
-	_check(not DotPlayerClassCatalogue.new().build().ok, "or no classes at all")
+	_check(not GSPlayerClassCatalogue.new().build().ok, "or no classes at all")
 
-	_check(DotPlayerClassCatalogue.presets().size() == 3, "three presets")
-	_check(DotPlayerClassCatalogue.preset(&"single") != null, "resolving by name")
-	_check(DotPlayerClassCatalogue.preset(&"nope") == null, "and nothing otherwise")
+	_check(GSPlayerClassCatalogue.presets().size() == 3, "three presets")
+	_check(GSPlayerClassCatalogue.preset(&"single") != null, "resolving by name")
+	_check(GSPlayerClassCatalogue.preset(&"nope") == null, "and nothing otherwise")
 	_check(shooter.describe_lines().size() == 7, "a catalogue describes itself")
 
 
 func _test_rules() -> void:
 	_section("rules")
 
-	var r := DotPlayerClassRules.new()
+	var r := GSPlayerClassRules.new()
 	_check(r.validate().ok, "the defaults validate")
 	_check(
 		r.apply_on_respawn,
@@ -240,14 +240,14 @@ func _test_rules() -> void:
 		"unless you are already dead, where there is nothing to exploit"
 	)
 
-	_check(DotPlayerClassRules.instant().apply_on_respawn == false, "a sandbox is instant")
+	_check(GSPlayerClassRules.instant().apply_on_respawn == false, "a sandbox is instant")
 	_check(
-		not DotPlayerClassRules.competitive().allow_midround_change,
+		not GSPlayerClassRules.competitive().allow_midround_change,
 		"a competitive mode locks mid-round"
 	)
-	_check(not DotPlayerClassRules.fixed().allow_choice, "and a fixed one lets nobody pick")
-	_check(DotPlayerClassRules.presets().size() == 4, "four presets")
-	_check(DotPlayerClassRules.preset(&"instant") != null, "resolving by name")
+	_check(not GSPlayerClassRules.fixed().allow_choice, "and a fixed one lets nobody pick")
+	_check(GSPlayerClassRules.presets().size() == 4, "four presets")
+	_check(GSPlayerClassRules.preset(&"instant") != null, "resolving by name")
 	_check(r.env_prefix() == "DOT_PLAYER_CLASS_", "with the family's config layering")
 
 
@@ -343,14 +343,14 @@ func _test_pending() -> void:
 	)
 
 	# The instant rules.
-	var instant := _manager(null, DotPlayerClassRules.instant())
+	var instant := _manager(null, GSPlayerClassRules.instant())
 	var _ia := instant.add("bob")
 	_alive["bob"] = true
 	var _ir := instant.request("bob", &"heavy")
 	_check(instant.class_of("bob") == &"heavy", "a sandbox applies immediately")
 
 	# Mid-round locking.
-	var comp := _manager(null, DotPlayerClassRules.competitive())
+	var comp := _manager(null, GSPlayerClassRules.competitive())
 	var _ca := comp.add("mel")
 	_live = true
 	var locked := comp.request("mel", &"medic")
@@ -401,7 +401,7 @@ func _test_limits_and_entitlements() -> void:
 	_teams["c"] = "red"
 	_check(m.request("c", &"sniper").ok, "and the other side has its own two slots")
 
-	var no_limits := _manager(null, DotPlayerClassRules.instant())
+	var no_limits := _manager(null, GSPlayerClassRules.instant())
 	for key in ["p", "q", "r"]:
 		_teams[key] = "blue"
 		var _r2 := no_limits.add(key)
@@ -412,7 +412,7 @@ func _test_limits_and_entitlements() -> void:
 	)
 
 	# Entitlements.
-	var paid := DotPlayerClassCatalogue.team_shooter()
+	var paid := GSPlayerClassCatalogue.team_shooter()
 	paid.get_class_def(&"heavy").requires_entitlement = &"heavy_unlock"
 	var e := _manager(paid)
 	_teams["zoe"] = "blue"
@@ -475,7 +475,7 @@ func _test_teams_and_mirror() -> void:
 	_teams.clear()
 	_alive.clear()
 
-	var asym := DotPlayerClassCatalogue.asymmetric()
+	var asym := GSPlayerClassCatalogue.asymmetric()
 	var m := _manager(asym)
 
 	_teams["ada"] = "attackers"
@@ -502,7 +502,7 @@ func _test_teams_and_mirror() -> void:
 	)
 
 	# Match end.
-	var reset := _manager(null, DotPlayerClassRules.competitive())
+	var reset := _manager(null, GSPlayerClassRules.competitive())
 	var _r := reset.add("mel")
 	var _f := reset.force("mel", &"heavy")
 	reset.note_match_end()
@@ -542,11 +542,11 @@ func _test_teams_and_mirror() -> void:
 	)
 
 	# Mirroring.
-	var client := DotPlayerClassManager.new()
+	var client := GSPlayerClassManager.new()
 	client.authoritative = false
 	client.register_service = false
-	client.catalogue = DotPlayerClassCatalogue.team_shooter()
-	client.rules = DotPlayerClassRules.new()
+	client.catalogue = GSPlayerClassCatalogue.team_shooter()
+	client.rules = GSPlayerClassRules.new()
 	add_child(client)
 
 	_check(client.apply_wire(limited.to_wire()).ok, "classes travel to a client")
@@ -590,7 +590,7 @@ func _line(text: String) -> void:
 
 ## The bridge that writes a class's numbers onto things this addon does not depend on.
 ##
-## Stood up against STUBS rather than against `DotHealth` and `DotFpsTunables`, and that
+## Stood up against STUBS rather than against `GSHealth` and `GSFpsTunables`, and that
 ## is the check rather than a convenience: this project installs GameSpice Core and GameSpice Player
 ## and nothing else, so if the bridge ever names one of those classes the suite stops
 ## compiling. Testing it against the real ones would need the dependency the bridge
@@ -635,7 +635,7 @@ class SmallHealth extends Object:
 func _test_applying() -> void:
 	_section("applying a class to what uses it")
 
-	var def := DotPlayerClassDef.new()
+	var def := GSPlayerClassDef.new()
 	def.id = &"heavy"
 	def.max_health = 300.0
 	def.max_armour = 150.0
@@ -647,7 +647,7 @@ func _test_applying() -> void:
 	def.knockback_scale = 0.25
 
 	var health := StubHealth.new()
-	_check(DotPlayerClassApply.to_health(def, health) == 4, "four health fields are written")
+	_check(GSPlayerClassApply.to_health(def, health) == 4, "four health fields are written")
 	_check(is_equal_approx(health.max_health, 300.0), "the maximum")
 	_check(is_equal_approx(health.max_armour, 150.0), "the armour")
 	_check(is_equal_approx(health.regen_per_second, 2.0), "the regeneration")
@@ -659,9 +659,9 @@ func _test_applying() -> void:
 	health.free()
 
 
-func _test_applying_reset(def: DotPlayerClassDef) -> void:
+func _test_applying_reset(def: GSPlayerClassDef) -> void:
 	var full := StubHealth.new()
-	var _n := DotPlayerClassApply.to_health(def, full, true, 640)
+	var _n := GSPlayerClassApply.to_health(def, full, true, 640)
 	_check(full.reset_at == 640, "asking for a reset resets at the tick given")
 	_check(
 		is_equal_approx(full.health, 300.0),
@@ -670,22 +670,22 @@ func _test_applying_reset(def: DotPlayerClassDef) -> void:
 	full.free()
 
 
-func _test_applying_movement(def: DotPlayerClassDef) -> void:
+func _test_applying_movement(def: GSPlayerClassDef) -> void:
 	var tunables := StubTunables.new()
-	_check(DotPlayerClassApply.to_movement(def, tunables) == 3, "three movement fields")
+	_check(GSPlayerClassApply.to_movement(def, tunables) == 3, "three movement fields")
 	_check(is_equal_approx(tunables.max_speed, 8.0), "the speed is scaled, not set")
 	_check(is_equal_approx(tunables.jump_height, 0.5), "and so is the jump")
 	_check(is_equal_approx(tunables.mass, 220.0), "the mass is a value and is set")
 
 	var again := StubTunables.new()
 	var base := StubTunables.new()
-	var _a := DotPlayerClassApply.to_movement(def, again)
-	var _b := DotPlayerClassApply.to_movement(def, again)
+	var _a := GSPlayerClassApply.to_movement(def, again)
+	var _b := GSPlayerClassApply.to_movement(def, again)
 	_check(
 		is_equal_approx(again.max_speed, 6.4),
 		"applying twice to the same object compounds, which is why `base` exists"
 	)
-	var _c := DotPlayerClassApply.to_movement(def, again, base)
+	var _c := GSPlayerClassApply.to_movement(def, again, base)
 	_check(
 		is_equal_approx(again.max_speed, 8.0),
 		"and a base to read from makes it idempotent"
@@ -696,21 +696,21 @@ func _test_applying_movement(def: DotPlayerClassDef) -> void:
 	base.free()
 
 
-func _test_applying_edges(def: DotPlayerClassDef, health: StubHealth) -> void:
+func _test_applying_edges(def: GSPlayerClassDef, health: StubHealth) -> void:
 	var small := SmallHealth.new()
 	_check(
-		DotPlayerClassApply.to_health(def, small) == 1,
+		GSPlayerClassApply.to_health(def, small) == 1,
 		"a target with fewer fields takes the ones it has rather than erroring"
 	)
 	_check(is_equal_approx(small.max_health, 300.0), "and gets them")
 
 	_check(
-		DotPlayerClassApply.to_health(null, health) == 0
-		and DotPlayerClassApply.to_movement(def, null) == 0,
+		GSPlayerClassApply.to_health(null, health) == 0
+		and GSPlayerClassApply.to_movement(def, null) == 0,
 		"a null on either side writes nothing rather than crashing a spawn"
 	)
 	_check(
-		is_equal_approx(DotPlayerClassApply.knockback_scale(def), 0.25),
+		is_equal_approx(GSPlayerClassApply.knockback_scale(def), 0.25),
 		"knockback is returned rather than written, because a hit is not a component"
 	)
 
@@ -731,66 +731,66 @@ func _put(rel: String, text: String) -> void:
 func _test_profiles() -> void:
 	_section("classes as dot-profile data")
 
-	var _clean := DotPaths.remove_tree(PROFILE_BASE)
-	var set := DotPlayerClassProfiles.make_set("mygame", PackedStringArray([PROFILE_BASE]))
+	var _clean := GSPaths.remove_tree(PROFILE_BASE)
+	var set := GSPlayerClassProfiles.make_set("mygame", PackedStringArray([PROFILE_BASE]))
 	_put("game/mygame/class/survivor.yml", "health: 120\nspeed: 1.0\n")
-	var res := DotPlayerClassProfiles.load_def(set, "survivor")
+	var res := GSPlayerClassProfiles.load_def(set, "survivor")
 	_check(res.ok, "a class loads from a profile")
-	var def: DotPlayerClassDef = res.value
+	var def: GSPlayerClassDef = res.value
 	_check(def.id == &"survivor" and is_equal_approx(def.max_health, 120.0), "the file's health is the class's")
-	_check(is_equal_approx(def.sprint_speed_scale, DotPlayerClassDef.INHERIT), "an unset number keeps the game's")
+	_check(is_equal_approx(def.sprint_speed_scale, GSPlayerClassDef.INHERIT), "an unset number keeps the game's")
 
 	var t := StubTunables.new()
-	var _n := DotPlayerClassApply.to_movement(def, t)
+	var _n := GSPlayerClassApply.to_movement(def, t)
 	_check(is_equal_approx(t.sprint_speed_scale, 1.2) and is_equal_approx(t.stamina_drain, 0.2), "unset fields leave the tunables alone")
-	_check(is_equal_approx(DotPlayerClassApply.carry_limit(def, 14.0), 14.0), "carry falls back to the game's")
+	_check(is_equal_approx(GSPlayerClassApply.carry_limit(def, 14.0), 14.0), "carry falls back to the game's")
 
 	_put("server/game/mygame/class/survivor.yml", "speed: 1.5\nsprint_speed_scale: 1.4\nstamina_drain: 0.5\ncarry_limit: 30\n")
-	set = DotPlayerClassProfiles.make_set("mygame", PackedStringArray([PROFILE_BASE]))
-	def = DotPlayerClassProfiles.load_def(set, "survivor").value
+	set = GSPlayerClassProfiles.make_set("mygame", PackedStringArray([PROFILE_BASE]))
+	def = GSPlayerClassProfiles.load_def(set, "survivor").value
 	var base := StubTunables.new()
 	t = StubTunables.new()
-	var _m := DotPlayerClassApply.to_movement(def, t, base)
+	var _m := GSPlayerClassApply.to_movement(def, t, base)
 	_check(is_equal_approx(t.max_speed, 15.0), "a server profile scales the run speed")
 	_check(is_equal_approx(t.sprint_speed_scale, 1.4) and is_equal_approx(t.stamina_drain, 0.5), "and sets the sprint and stamina numbers")
-	_check(is_equal_approx(DotPlayerClassApply.carry_limit(def, 14.0), 30.0), "and the carry limit")
+	_check(is_equal_approx(GSPlayerClassApply.carry_limit(def, 14.0), 30.0), "and the carry limit")
 	_check(is_equal_approx(def.max_health, 120.0), "keys the server file leaves out come from the lower tier")
 
 	_check(def.immune_to.is_empty(), "no immunity by default")
 	_put("server/game/mygame/class/jetpack.yml", "immune: [fall, fire]\n")
-	var jet: DotPlayerClassDef = DotPlayerClassProfiles.load_def(set, "jetpack").value
+	var jet: GSPlayerClassDef = GSPlayerClassProfiles.load_def(set, "jetpack").value
 	_check(jet.immune_to == [&"fall", &"fire"], "a profile lists the damage kinds a class ignores")
-	_check(DotPlayerClassDef.from_dict(jet.to_dict()).immune_to == jet.immune_to, "and the list survives the wire form")
+	_check(GSPlayerClassDef.from_dict(jet.to_dict()).immune_to == jet.immune_to, "and the list survives the wire form")
 	var imm := StubImmunity.new()
-	_check(DotPlayerClassApply.to_immunity(jet, imm, 9) == 2 and imm.is_immune(9, &"fall"), "the bridge writes it for the entity")
-	var _w := DotPlayerClassApply.to_immunity(def, imm, 9)
+	_check(GSPlayerClassApply.to_immunity(jet, imm, 9) == 2 and imm.is_immune(9, &"fall"), "the bridge writes it for the entity")
+	var _w := GSPlayerClassApply.to_immunity(def, imm, 9)
 	_check(not imm.is_immune(9, &"fall"), "a class with none clears the entry on respawn")
 
 	_put("server/game/mygame/class/bad.yml", "speed: 99\n")
 	_put("server/game/mygame/class/typo.yml", "sprnt: 2\n")
-	_check(not DotPlayerClassProfiles.load_def(set, "bad").ok, "an out-of-range value is refused")
-	_check(not DotPlayerClassProfiles.load_def(set, "typo").ok, "an unknown key is refused")
+	_check(not GSPlayerClassProfiles.load_def(set, "bad").ok, "an out-of-range value is refused")
+	_check(not GSPlayerClassProfiles.load_def(set, "typo").ok, "an unknown key is refused")
 
-	var bad := DotPlayerClassDef.new()
+	var bad := GSPlayerClassDef.new()
 	bad.id = &"x"
 	bad.carry_limit = -5.0
 	_check(not bad.validate().ok, "a negative that is not the inherit marker fails validation")
 
 	var errors := PackedStringArray()
-	var cat := DotPlayerClassProfiles.to_catalogue(set, errors)
+	var cat := GSPlayerClassProfiles.to_catalogue(set, errors)
 	_check(cat.has_class(&"survivor") and errors.size() == 2, "the catalogue holds the good class and reports the two bad ones")
-	var round_trip := DotPlayerClassDef.from_dict(def.to_dict())
+	var round_trip := GSPlayerClassDef.from_dict(def.to_dict())
 	_check(is_equal_approx(round_trip.sprint_speed_scale, 1.4) and is_equal_approx(round_trip.carry_limit, 30.0), "to_dict and from_dict carry the new fields")
 
-	_check(is_equal_approx(def.drop_throw_force, DotPlayerClassDef.INHERIT) and is_equal_approx(def.drop_lifetime, DotPlayerClassDef.INHERIT), "drop fields default to inherit")
+	_check(is_equal_approx(def.drop_throw_force, GSPlayerClassDef.INHERIT) and is_equal_approx(def.drop_lifetime, GSPlayerClassDef.INHERIT), "drop fields default to inherit")
 	_put("server/game/mygame/class/dropper.yml", "drop_throw_force: 12\ndrop_lifetime: 0\ndrop_allowed: 0\n")
-	var dropper: DotPlayerClassDef = DotPlayerClassProfiles.load_def(set, "dropper").value
+	var dropper: GSPlayerClassDef = GSPlayerClassProfiles.load_def(set, "dropper").value
 	_check(is_equal_approx(dropper.drop_throw_force, 12.0) and is_equal_approx(dropper.drop_lifetime, 0.0) and is_equal_approx(dropper.drop_allowed, 0.0), "a profile sets the drop numbers")
-	var dropper_back := DotPlayerClassDef.from_dict(dropper.to_dict())
-	_check(is_equal_approx(dropper_back.drop_throw_force, 12.0) and is_equal_approx(dropper_back.drop_pickup_radius, DotPlayerClassDef.INHERIT), "and they survive the wire form")
+	var dropper_back := GSPlayerClassDef.from_dict(dropper.to_dict())
+	_check(is_equal_approx(dropper_back.drop_throw_force, 12.0) and is_equal_approx(dropper_back.drop_pickup_radius, GSPlayerClassDef.INHERIT), "and they survive the wire form")
 	_put("server/game/mygame/class/dropbad.yml", "drop_throw_force: 99\n")
-	_check(not DotPlayerClassProfiles.load_def(set, "dropbad").ok, "an out-of-range drop force is refused")
+	_check(not GSPlayerClassProfiles.load_def(set, "dropbad").ok, "an out-of-range drop force is refused")
 
 	t.free()
 	base.free()
-	var _gone := DotPaths.remove_tree(PROFILE_BASE)
+	var _gone := GSPaths.remove_tree(PROFILE_BASE)
